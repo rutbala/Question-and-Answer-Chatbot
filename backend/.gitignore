@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask instance folder
+instance/
+
+# Flask environment variables
+.env
+*.env
+
+# Pytest and coverage
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# VSCode, PyCharm, and other IDEs
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Migrations (optional, if using Flask-Migrate)
+migrations/
+
+# Compiled files
+*.egg-info/
+dist/
+build/
