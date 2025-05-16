@@ -69,7 +69,7 @@ The backend will be available at http://localhost:5000
 3. Once the file is uploaded, you can ask questions about its contents
 4. The answers will be displayed below the question input
 
-##API Endpoints
+## API Endpoints
 1. POST /upload: Uploads and parses the PDF.
 2. POST /ask: Sends a question to Gemini with the extracted PDF context.
 
