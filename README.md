@@ -10,6 +10,7 @@ This is a full-stack web application that lets users:
 
 The app is built with a Flask backend and a React frontend, communicating over REST.
 
+
 | Layer         | Technology                            |
 | ------------- | ------------------------------------- |
 | Frontend      | React, JavaScript                     |
@@ -19,11 +20,13 @@ The app is built with a Flask backend and a React frontend, communicating over R
 | Communication | REST APIs (`/upload`, `/ask`)         |
 | Environment   | `dotenv`, `flask-cors`                |
 
+
 Getting Started:
 
 1. Clone the Repository:
    
 git clone https://github.com/rutbala/Question-and-Answer-Chatbot.git
+
 
 2. Setup Backend (Flask):
    
@@ -33,9 +36,11 @@ python -m venv venv
 
 venv\Scripts\activate
 
+
 3. Create a .env file:
 
 API_KEY=your_gemini_api_key_here
+
 
 4. Start the server:
 
@@ -49,6 +54,8 @@ cd ../frontend
 npm install
 
 npm start
+
+
 
 API Endpoints:
 
