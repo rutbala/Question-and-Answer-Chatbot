@@ -21,45 +21,55 @@ The app is built with a Flask backend and a React frontend, communicating over R
 | Environment   | `dotenv`, `flask-cors`                |
 
 
-**Clone the Repository:**
-   
-git clone https://github.com/rutbala/Question-and-Answer-Chatbot.git
+## Setup
 
+### Frontend Setup
 
-**Setup Backend (Flask):**
-   
-cd backend
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
 
-python -m venv venv
-
-venv\Scripts\activate
-
-
-**Create a .env file:**
-
-API_KEY=your_gemini_api_key_here
-
-
-**Start the server:**
-
-python app.py
-
-
-**Setup Frontend (React)**
-
-cd ../frontend
-
+2. Install dependencies:
+```bash
 npm install
+```
 
+3. Start the development server:
+```bash
 npm start
+```
 
+The frontend will be available at http://localhost:3000
 
+### Backend Setup
 
-**API Endpoints:**
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
 
-POST /upload: Uploads and parses the PDF.
+2. Create a virtual environment (optional but recommended):
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
+4. Start the Flask server:
+```bash
+python app.py
+```
 
-POST /ask: Sends a question to Gemini with the extracted PDF context.
+The backend will be available at http://localhost:5000
 
+## Usage
+
+1. Open your browser and go to http://localhost:3000
+2. Upload a PDF file using the file upload component
+3. Once the file is uploaded, you can ask questions about its contents
+4. The answers will be displayed below the question input
+
+##API Endpoints
+1. POST /upload: Uploads and parses the PDF.
+2. POST /ask: Sends a question to Gemini with the extracted PDF context.
 
