@@ -21,14 +21,12 @@ The app is built with a Flask backend and a React frontend, communicating over R
 | Environment   | `dotenv`, `flask-cors`                |
 
 
-Getting Started:
-
-1. Clone the Repository:
+**Clone the Repository:**
    
 git clone https://github.com/rutbala/Question-and-Answer-Chatbot.git
 
 
-2. Setup Backend (Flask):
+**Setup Backend (Flask):**
    
 cd backend
 
@@ -37,17 +35,17 @@ python -m venv venv
 venv\Scripts\activate
 
 
-3. Create a .env file:
+**Create a .env file:**
 
 API_KEY=your_gemini_api_key_here
 
 
-4. Start the server:
+**Start the server:**
 
 python app.py
 
 
-5. Setup Frontend (React)
+**Setup Frontend (React)**
 
 cd ../frontend
 
@@ -57,7 +55,7 @@ npm start
 
 
 
-API Endpoints:
+**API Endpoints:**
 
 POST /upload: Uploads and parses the PDF.
 
