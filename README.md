@@ -19,21 +19,6 @@ The app is built with a Flask backend and a React frontend, communicating over R
 | Communication | REST APIs (`/upload`, `/ask`)         |
 | Environment   | `dotenv`, `flask-cors`                |
 
-Project Structure:
-
-Question-and-Answer-Chatbot/
-├── backend/
-│   ├── app.py                # Flask server
-│   ├── requirements.txt      # Python dependencies
-│   └── .env                  # Contains API_KEY
-├── frontend/
-│   ├── src/
-│   │   ├── App.js
-│   │   ├── FileUpload.js
-│   │   ├── QuestionBox.js
-│   └── package.json          # React dependencies
-└── README.md
-
 Getting Started:
 
 1. Clone the Repository:
