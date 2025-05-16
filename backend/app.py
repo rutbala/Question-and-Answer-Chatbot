@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os 
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -13,10 +14,11 @@ context_text = ""
 
 #creating a flask instance
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 @app.route('/', methods=['GET'])
 def home():
-    return render_template("base.html")
+    return jsonify({"message": "API is running"})
 
 @app.route('/upload', methods=['POST'])
 def uploadfile():
@@ -26,8 +28,8 @@ def uploadfile():
         import fitz
         doc = fitz.open(stream=pdf.read(), filetype="pdf")
         context_text = " ".join([page.get_text() for page in doc])
-        return "PDF uploaded and text extracted!"
-    return "No file received"
+        return jsonify({"message": "PDF uploaded and text extracted!"})
+    return jsonify({"error": "No file received"}), 400
 
 
 @app.route('/ask', methods=['POST'])
@@ -36,9 +38,9 @@ def askquestion():
     question = request.form.get("question")
 
     if not context_text:
-        return render_template("base.html", answer="Please upload a PDF first.")
+        return jsonify({"error": "Please upload a PDF first."}), 400
     if not question:
-        return render_template("base.html", answer="Please enter a question.")
+        return jsonify({"error": "Please enter a question."}), 400
 
     prompt = f"Based on the following document, answer this question:\n\nContext:\n{context_text}\n\nQuestion:\n{question}"
 
@@ -62,14 +64,13 @@ def askquestion():
         # Parse response
         if "candidates" in data:
             answer = data["candidates"][0]["content"]["parts"][0]["text"]
+            return jsonify({"answer": answer})
         else:
-            answer = "No response from Gemini API."
-
-        return render_template("base.html", answer=answer)
+            return jsonify({"error": "No response from Gemini API."}), 500
 
     except Exception as e:
-        return render_template("base.html", answer=f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
