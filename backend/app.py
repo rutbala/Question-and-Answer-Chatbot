@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 import requests 
+import json
 
 
 load_dotenv()
@@ -48,26 +49,34 @@ def askquestion():
         # Construct API request to Gemini via REST
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={MY_API_KEY}"
         
-        payload = {
+        payload = json.dumps({
             "contents": [
                 {
-                    "parts": [{"text": prompt}]
+                    "parts": [
+                        {"text": prompt}
+                    ]
                 }
             ]
+        })
+
+        headers = {
+            "Content-Type": "application/json"
         }
 
-        headers = {"Content-Type": "application/json"}
-
-        response = requests.post(url, headers=headers, json=payload)
+        # Send POST request
+        response = requests.request("POST", url, headers=headers, data=payload)
         data = response.json()
 
-        # Parse response
-        if "candidates" in data:
+        # Extract answer
+        if "candidates" in data and data["candidates"]:
             answer = data["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"answer": answer})
         else:
-            return jsonify({"error": "No response from Gemini API."}), 500
-
+            return jsonify({
+                "error": "No response from Gemini API.",
+                "details": data
+            }), 500
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
