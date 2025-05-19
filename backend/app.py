@@ -1,21 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os 
-from dotenv import load_dotenv
-import google.generativeai as genai
-import requests 
+import os
+#from dotenv import load_dotenv
+import fitz  # PyMuPDF
+import uuid
 import json
-import fitz
+import requests
 
-
-
-load_dotenv()
+# Load environment variables
+#load_dotenv()
 MY_API_KEY = os.getenv("API_KEY")
 
-#storing uploaded pdf globably
-context_text = ""
+# In-memory storage (for demo purposes only; use Redis/DB in production)
+pdf_store = {}
 
-#creating a flask instance
+# Flask app setup
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
@@ -25,40 +24,47 @@ def home():
 
 @app.route('/upload', methods=['POST'])
 def uploadfile():
-    global context_text
     pdf = request.files.get("PDF")
 
     if not pdf:
         return jsonify({"error": "No file received"}), 400
 
-    # Check if the uploaded file is a PDF
     if pdf.mimetype != 'application/pdf':
         return jsonify({"error": "Invalid file type. Please upload a PDF file only."}), 400
 
     try:
         doc = fitz.open(stream=pdf.read(), filetype="pdf")
         context_text = " ".join([page.get_text() for page in doc])
-        return jsonify({"message": "PDF uploaded and text extracted!"})
+
+        doc_id = str(uuid.uuid4())  # 🔑 Unique ID per PDF
+        pdf_store[doc_id] = context_text  # Save in memory
+
+        return jsonify({
+            "message": "PDF uploaded and text extracted!",
+            "doc_id": doc_id  # Return doc_id to frontend
+        })
+
     except Exception as e:
         return jsonify({"error": f"Failed to read PDF: {str(e)}"}), 500
 
-
 @app.route('/ask', methods=['POST'])
 def askquestion():
-    global context_text
-    question = request.form.get("question")
+    data = request.get_json()
+    question = data.get("question")
+    doc_id = data.get("doc_id")
 
+    if not question or not doc_id:
+        return jsonify({"error": "Missing question or document ID"}), 400
+
+    context_text = pdf_store.get(doc_id)
     if not context_text:
-        return jsonify({"error": "Please upload a PDF first."}), 400
-    if not question:
-        return jsonify({"error": "Please enter a question."}), 400
+        return jsonify({"error": "Invalid or expired document ID"}), 404
 
     prompt = f"Based on the following document, answer this question:\n\nContext:\n{context_text}\n\nQuestion:\n{question}"
 
     try:
-        # Construct API request to Gemini via REST
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={MY_API_KEY}"
-        
+
         payload = json.dumps({
             "contents": [
                 {
@@ -73,11 +79,10 @@ def askquestion():
             "Content-Type": "application/json"
         }
 
-        # Send POST request
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.post(url, headers=headers, data=payload)
         data = response.json()
+        print("Gemini Response:", data)
 
-        # Extract answer
         if "candidates" in data and data["candidates"]:
             answer = data["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"answer": answer})
@@ -86,10 +91,9 @@ def askquestion():
                 "error": "No response from Gemini API.",
                 "details": data
             }), 500
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
