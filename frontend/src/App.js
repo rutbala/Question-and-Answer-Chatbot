@@ -4,7 +4,6 @@ import {
   Box,
   TextField,
   Button,
-  Paper,
   Typography,
   CircularProgress,
   ThemeProvider,
@@ -36,6 +35,7 @@ function App() {
   const [pdfUploaded, setPdfUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [docId, setDocId] = useState(null); // NEW: Store unique document ID
 
   const handleFileUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -44,17 +44,26 @@ function App() {
     setUploading(true);
     setError('');
     setFileName(file.name);
-    
+
     const formData = new FormData();
     formData.append('PDF', file);
 
     try {
       const response = await axios.post('http://localhost:5000/upload', formData);
+      const { doc_id } = response.data; // Extract doc_id
+      setDocId(doc_id);                 // Store it
       setPdfUploaded(true);
       setError('');
     } catch (err) {
+      //Reset everything to clear previous upload state 05/19/25: 15:41
+      setDocId(null);
+      setPdfUploaded(false);
+      setAnswer('');
+      setQuestion('');
+      setFileName('');
+      // Reset everything to clear previous upload state 05/19/25: 15:41
       setError('Failed to upload PDF. Please try again.');
-      console.error('Error:', err);
+      console.error('Upload Error:', err);
     } finally {
       setUploading(false);
     }
@@ -62,16 +71,21 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!question.trim() || !docId) return;
 
     setLoading(true);
     setError('');
-    
+    setAnswer('');
+
     try {
-      const formData = new FormData();
-      formData.append('question', question);
-      
-      const response = await axios.post('http://localhost:5000/ask', formData);
+      const response = await axios.post(
+        'http://localhost:5000/ask',
+        { question, doc_id: docId }, // Send doc_id with the question
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
       if (response.data.error) {
         setError(response.data.error);
       } else {
@@ -79,7 +93,7 @@ function App() {
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to get answer. Please try again.');
-      console.error('Error:', err);
+      console.error('Ask Error:', err);
     } finally {
       setLoading(false);
     }
@@ -89,20 +103,16 @@ function App() {
     <ThemeProvider theme={theme}>
       <Container maxWidth="md">
         <Box sx={{ my: 4 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            gutterBottom 
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
             align="center"
-            sx={{ 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              mb: 4 
-            }}
+            sx={{ fontWeight: 'bold', color: 'primary.main', mb: 4 }}
           >
             PDF Question & Answer Chatbot
           </Typography>
-          
+
           <Card elevation={3} sx={{ mb: 4 }}>
             <CardContent>
               <Box sx={{ mb: 3 }}>
@@ -177,9 +187,9 @@ function App() {
                 <Typography variant="h6" gutterBottom color="primary">
                   Answer:
                 </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
+                <Typography
+                  variant="body1"
+                  sx={{
                     whiteSpace: 'pre-wrap',
                     lineHeight: 1.6,
                     fontSize: '1.1rem'
