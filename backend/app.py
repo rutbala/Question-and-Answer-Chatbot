@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import requests 
 import json
+import fitz
+
 
 
 load_dotenv()
@@ -25,12 +27,20 @@ def home():
 def uploadfile():
     global context_text
     pdf = request.files.get("PDF")
-    if pdf:
-        import fitz
+
+    if not pdf:
+        return jsonify({"error": "No file received"}), 400
+
+    # Check if the uploaded file is a PDF
+    if pdf.mimetype != 'application/pdf':
+        return jsonify({"error": "Invalid file type. Please upload a PDF file only."}), 400
+
+    try:
         doc = fitz.open(stream=pdf.read(), filetype="pdf")
         context_text = " ".join([page.get_text() for page in doc])
         return jsonify({"message": "PDF uploaded and text extracted!"})
-    return jsonify({"error": "No file received"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Failed to read PDF: {str(e)}"}), 500
 
 
 @app.route('/ask', methods=['POST'])
